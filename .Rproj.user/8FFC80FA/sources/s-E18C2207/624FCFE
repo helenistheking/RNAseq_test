@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1546011206166.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "624FCFE",
+    "lastKnownWriteTime" : 1546014510,
+    "last_content_update" : 1546017193054,
+    "path" : "~/Desktop/Saqi Lab/RNAseq_test/app.R",
+    "project_path" : "app.R",
+    "properties" : {
+        "cursorPosition" : "10,0",
+        "notebook_format" : "html_document",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
