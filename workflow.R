@@ -15,6 +15,17 @@
 # For DESeq2 do not normalise reads prior 
 # for a quicker version - use tximport and kallisto (transcript abundance quantification)
 
+#2.2 Not done here is aligning reads to a reference genome
+#FASTQ files (nucleotide sequence and quality score)
+#using STAR to align to human reference genome
+
+#This is the form of the for loop used 
+##for f in `cat files`; do STAR --genomeDir ../STAR/ENSEMBL.homo_sapiens.release-75 \
+# --readFilesIn fastq/$f\_1.fastq fastq/$f\_2.fastq \
+# --runThreadN 12 --outFileNamePrefix aligned/$f.; done
+# for f in `cat files`; do samtools view -bS aligned/$f.Aligned.out.sam \
+# -o aligned/$f.bam; done
+
 # 2.3 Locating alignment files 
 #only reads aligned to small region of chromosome 1
 library("airway", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
@@ -65,3 +76,28 @@ txdb <- makeTxDbFromGFF(gtffile, format = "gtf", circ_seqs = character())
 
 #list of all the exons grouped by genes 
 ebg <-exonsBy(txdb, by="gene")
+
+#2.6 Read counting step
+#single core-  Expect that the summarizeOverlaps call will take at least 30 minutes per file for a human RNA-seq file with 30 million aligned reads. By sending the files to separate cores, one can speed up the entire counting process.
+library("GenomicAlignments")
+library("BiocParallel")
+
+
+register(SerialParam())
+se <- summarizeOverlaps(features=ebg, reads=bamfiles,
+                        mode="Union",
+                        singleEnd=FALSE,
+                        ignore.strand=TRUE,
+                        fragments=TRUE )
+#mode arguement supplies the kind of reads overlapped
+#fragments counted once to each gene, even
+#if they overlap only once to each gene
+#if they overlap multiple exons of a gene which may themselves be overlapping
+
+#singleEnd=FALSE produce paired end reads count only a pair of genes
+
+#fragments arguement can be used when se=F
+
+#if the RNAseq exp is strand specific https://www.ecseq.com/support/ngs/how-do-strand-specific-sequencing-protocols-work
+#this experiment isn't so set ignorestand to TRUE
+#

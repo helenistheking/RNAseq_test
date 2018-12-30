@@ -8,7 +8,15 @@ ssh_connect("k1632479@login.rosalind.kcl.ac.uk", passwd="Hkdogs222*")
 install.packages("remotes")
 library(remotes)
 
-# 
+# loading out of date but the experimental data file
 install_bioc("airway", version = "3.8")
 library("airway")
-library("shh")
+
+
+#install GTF file downloader 
+install.packages("GenomicFeatures")
+
+#loading STAR
+# install.packages("STAR")
+
+
