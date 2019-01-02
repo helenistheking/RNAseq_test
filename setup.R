@@ -19,4 +19,7 @@ install.packages("GenomicFeatures")
 #loading STAR
 # install.packages("STAR")
 
+# install
+source("https://bioconductor.org/biocLite.R")
+biocLite("vsn")
 

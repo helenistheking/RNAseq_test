@@ -100,4 +100,82 @@ se <- summarizeOverlaps(features=ebg, reads=bamfiles,
 
 #if the RNAseq exp is strand specific https://www.ecseq.com/support/ngs/how-do-strand-specific-sequencing-protocols-work
 #this experiment isn't so set ignorestand to TRUE
-#
+#experimentally, strand-specific protocol is achieved through attaching different ligators to either ends of the cDNA (this indicates directionality FRTseq)
+
+#2.7 se means summarised experiment
+#assay means a matrix of counts, row ranges contains genomic ranges and col data contains sample info
+
+#use to check
+dim(se) 
+assayNames(se)# expected output counts
+head(assay(se), 3)
+colSums(assay(se))
+rowRanges(se)#helps show the metadata
+str(metadata(rowRanges(se))) #shows metadata compactly
+colData(se) #emputy and should contain all metadata
+#Because we used a column of sampleTable to produce the bamfiles vector, we know the columns of se are in the same order as the rows of sampleTable. We can assign the sampleTable as the colData of the summarized experiment, by converting it into a DataFrame and using the assignment function:
+colData(se) <- DataFrame(sampleTable)
+colData(se)
+
+#2.8Branching point 
+# this point we have counted fragments which overlap the genes in the gene model specified
+# could use lots of other packages tfor exploration and differential expression analysis
+# e.g. the limma point seen by law et al. 
+# How many biological replicates are needed in an RNA-seq experiment and which differential expression tool should you use? paper can help devide which package to use
+
+# 3. The DESeqDataSet object 
+# certain data classes such as SummarisedExperiment needed for each package
+# the core Bioconductor classes provide useful functionality: for example, subsetting or reordering the rows or columns of a SummarizedExperiment automatically subsets or reorders the associated rowRanges and colData, which can help to prevent accidental sample swaps that would otherwise lead to spurious results
+# DESeqDataSet for DESeq2
+# difference between DESeqDataSet and SummarisedExperiment
+# 1) assay slot accessed by counts accessor funtion and non negative intgers
+#  2) design formulae for DESeqDataset how to treat the samples in the analysis (one exception is the size factor estimation, i.e., the adjustment for differing library sizes, which does not depend on the design formula). The design formula tells which columns in the sample information table (colData) specify the experimental design and how these factors should be used in the analysis.
+
+#simplest design formulae for DE is ~condition that specifies wich of two samples belong to
+#airway experiment, specific ~ cell + dex 
+se$cell
+se$dex
+library("magrittr")
+se$dex %<>% relevel("untrt") #pipe operator also in R preferred first factor is untrt
+se$dex
+
+
+#steps we used to produce this object were equivalent to those you worked through in the previous sections, except that we used all the reads and all the genes.
+data("airway")
+se <- airway
+se$dex %<>% relevel("untrt")
+se$dex
+round( colSums(assay(se)) / 1e6, 1 )
+
+colData(se)
+library("DESeq2")
+dds <- DESeqDataSet(se, design = ~ cell + dex)
+
+#3.2 Starting from count matrices 
+#building DESeqDataSet with only a count matrix and a table of sample information
+#see the paper
+
+#4 Exploratory analysis and visualization
+#two pathways 1) tranformation of counts to explore sample relationships 2) original raw counts for stats testing 
+#critical- statistical cou
+
+nrow(dds)
+dds <- dds[ rowSums(counts(dds))>1, ]
+# remove rows with only zeros 
+nrow(dds)
+
+#4.2 variance stabilizing transformaion and the rlog
+#homoskedastic- expected amount of variance is approximately the same across different mean values
+#PCA usually displays plots with the highest variance as the ones with the same highest counts as they show the largest differences. However if you take log of normalised counts and pseudocount of one, can counteract it. 
+#however a pseudocount also means lowest counts create noises
+lambda <- 10^seq(from=-1, to=2, length=1000)
+#seq is a function that generates regular sequences
+cts <- matrix(rpois(1000*100,lambda), ncol=100)
+#rpois Density, distribution function, quantile function and random generation for the Poisson distribution with parameter lambda.
+library("vsn")
+meanSdPlot(cts, ranks= FALSE)
+
+log.cts.one <- log2(cts + 1)
+meanSdPlot(log.cts.one, ranks= FALSE)
+
+#two different distubutions
