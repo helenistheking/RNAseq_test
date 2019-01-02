@@ -168,6 +168,8 @@ nrow(dds)
 #homoskedastic- expected amount of variance is approximately the same across different mean values
 #PCA usually displays plots with the highest variance as the ones with the same highest counts as they show the largest differences. However if you take log of normalised counts and pseudocount of one, can counteract it. 
 #however a pseudocount also means lowest counts create noises
+
+#example 1
 lambda <- 10^seq(from=-1, to=2, length=1000)
 #seq is a function that generates regular sequences
 cts <- matrix(rpois(1000*100,lambda), ncol=100)
@@ -175,7 +177,47 @@ cts <- matrix(rpois(1000*100,lambda), ncol=100)
 library("vsn")
 meanSdPlot(cts, ranks= FALSE)
 
+#example 2
 log.cts.one <- log2(cts + 1)
 meanSdPlot(log.cts.one, ranks= FALSE)
 
-#two different distubutions
+#two different distubutions in DESeq2 VST(variance stabilizing transformation) for neg binomial data with dispersion mean trend (vst function)
+#regularized-logarihm tranformation or rlog
+
+#for high count no genes similar results with VST and rlog to log2 transformation of normalised counts
+#for low count number genes, middle values shrink- VST/rlog become homoskedastic- used for making PCA plts + input
+
+#what to choose, VST or rlog? do both compare PCA or meanSdplot
+#VST- fast, less sensitive to high count outliers n>30
+#rlog- n<30, datasets with sequencing depth
+#other tranformations offered by DESeq2 NOT for DE
+
+vsd <- vst(dds, blind=FALSE)
+#blind the information from project design, which means the differences between cell lines and treatment will not contribute to the expected variance-mean trend of the experiment 
+head(assay(vsd),3)
+#assay creates matrix-like container whererows represents features of interest
+colData(vsd)
+
+rld <- rlog(dds, blind=FALSE)
+head(assay(rld), 3)
+
+#to show the effect of the transformation, plotting log2(x+1), rlog, vst
+library("dplyr")
+library("ggplot2")
+
+dds <- estimateSizeFactors(dds)
+
+df <- bind_rows(
+  as_data_frame(log2(counts(dds, normalized=TRUE)[, 1:2]+1)) %>%
+    mutate(transformation = "log2(x + 1)"),
+  as_data_frame(assay(vsd)[, 1:2]) %>% mutate(transformation = "vst"),
+  as_data_frame(assay(rld)[, 1:2]) %>% mutate(transformation = "rlog"))
+
+colnames(df)[1:2] <- c("x", "y")  
+
+ggplot(df, aes(x = x, y = y)) + geom_hex(bins = 80) +
+  coord_fixed() + facet_grid( . ~ transformation)  
+
+#to upload onto the main comp
+files <- c("setup.R", "workflow.R")
+scp_upload(session, files, to = "RNAseq_test")

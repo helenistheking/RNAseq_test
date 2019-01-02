@@ -2,7 +2,8 @@
 install.packages("ssh")
 library("ssh", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
 
-ssh_connect("k1632479@login.rosalind.kcl.ac.uk", passwd="Hkdogs222*")
+session <- ssh_connect("k1632479@login.rosalind.kcl.ac.uk", passwd="Hkdogs222*")
+
 
 # loading out of date packages 
 install.packages("remotes")
@@ -23,3 +24,5 @@ install.packages("GenomicFeatures")
 source("https://bioconductor.org/biocLite.R")
 biocLite("vsn")
 
+install.packages("dplyr")
+install.packages("ggplot2")
