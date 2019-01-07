@@ -13,6 +13,8 @@ library(remotes)
 install_bioc("airway", version = "3.8")
 library("airway")
 
+#install ggbeeswarm
+install.packages("ggbeeswarm")
 
 #install GTF file downloader 
 install.packages("GenomicFeatures")
@@ -26,3 +28,5 @@ biocLite("vsn")
 
 install.packages("dplyr")
 install.packages("ggplot2")
+install.packages("hexbin")
+install.packages("pheatmap")

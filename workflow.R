@@ -204,6 +204,7 @@ head(assay(rld), 3)
 #to show the effect of the transformation, plotting log2(x+1), rlog, vst
 library("dplyr")
 library("ggplot2")
+library("hexbin")
 
 dds <- estimateSizeFactors(dds)
 
@@ -215,9 +216,15 @@ df <- bind_rows(
 
 colnames(df)[1:2] <- c("x", "y")  
 
+
+#plotting first sample (x) against second(y)
+#It is the differences between samples (deviation from y=x in these scatterplots) which will contribute to the distance calculations and the PCA plot.
+#genes with low counts , variable in log scale
 ggplot(df, aes(x = x, y = y)) + geom_hex(bins = 80) +
   coord_fixed() + facet_grid( . ~ transformation)  
 
 #to upload onto the main comp
-files <- c("setup.R", "workflow.R")
+files <- c("setup.R", "workflow.R", "Rplot.jpeg")
 scp_upload(session, files, to = "RNAseq_test")
+
+
